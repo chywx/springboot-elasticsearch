@@ -1,6 +1,6 @@
 package cn.chendahai.controller;
 
-import cn.chendahai.entity.Match;
+import cn.chendahai.entity.Person;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import java.io.IOException;
@@ -70,14 +70,14 @@ public class IndexController {
      * 添加数据
      * @param index
      * @param type
-     * @param match
+     * @param person
      * @return
      * @throws IOException
      */
     @PostMapping("add")
-    public ResponseEntity add(String index, String type, Match match) throws IOException {
-        IndexRequest request = new IndexRequest(index, type, match.getId().toString());
-        request.source(JSON.toJSONString(match), XContentType.JSON);
+    public ResponseEntity add(String index, String type, Person person) throws IOException {
+        IndexRequest request = new IndexRequest(index, type, person.getId().toString());
+        request.source(JSON.toJSONString(person), XContentType.JSON);
         IndexResponse response = esClient.index(request, RequestOptions.DEFAULT);
         System.out.println(JSONObject.toJSONString(response));
         return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
@@ -93,9 +93,9 @@ public class IndexController {
     @PostMapping("addAll")
     public ResponseEntity addAll(String index, String type) throws IOException {
         BulkRequest bulkRequest = new BulkRequest();
-        for (Match match : Match.matches) {
-            IndexRequest indexRequest = new IndexRequest(index, type, match.getId().toString());
-            indexRequest.source(JSON.toJSONString(match), XContentType.JSON);
+        for (Person person : Person.people) {
+            IndexRequest indexRequest = new IndexRequest(index, type, person.getId().toString());
+            indexRequest.source(JSON.toJSONString(person), XContentType.JSON);
             bulkRequest.add(indexRequest);
         }
         BulkResponse response = esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
@@ -108,15 +108,15 @@ public class IndexController {
      * 更新数据
      * @param index
      * @param type
-     * @param match
+     * @param person
      * @return
      * @throws IOException
      */
     @PostMapping("update")
-    public ResponseEntity update(String index, String type, Match match) throws IOException {
-        UpdateRequest request = new UpdateRequest(index, type, match.getId().toString());
+    public ResponseEntity update(String index, String type, Person person) throws IOException {
+        UpdateRequest request = new UpdateRequest(index, type, person.getId().toString());
 
-        request.doc(JSON.toJSONString(match), XContentType.JSON);
+        request.doc(JSON.toJSONString(person), XContentType.JSON);
 
         UpdateResponse response = esClient.update(request, RequestOptions.DEFAULT);
 
