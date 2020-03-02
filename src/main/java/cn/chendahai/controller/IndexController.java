@@ -5,9 +5,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import java.io.IOException;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -59,13 +63,28 @@ public class IndexController {
         return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
 
+    @PostMapping("addAll")
+    public ResponseEntity addAll(String index, String type) throws IOException {
+        BulkRequest bulkRequest = new BulkRequest();
+        for (Match match : Match.matches) {
+            IndexRequest indexRequest = new IndexRequest(index, type, match.getId().toString());
+            indexRequest.source(JSON.toJSONString(match), XContentType.JSON);
+            bulkRequest.add(indexRequest);
+        }
+        BulkResponse response = esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+        System.out.println(JSONObject.toJSONString(response));
+        return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
+    }
 
-    @PostMapping("add2")
-    public ResponseEntity add2() throws IOException {
-        IndexRequest request = new IndexRequest("dahai", "facebook", "3");
-        String jsonString = "{\"user\":\"kimchy\",\"postDate\":\"2013-01-30\",\"message\":\"trying out Elasticsearch\"}";
-        request.source(jsonString, XContentType.JSON);
-        IndexResponse response = esClient.index(request);
+
+    @PostMapping("update")
+    public ResponseEntity update(String index, String type, Match match) throws IOException {
+        UpdateRequest request = new UpdateRequest(index, type, match.getId().toString());
+
+        request.doc(JSON.toJSONString(match), XContentType.JSON);
+
+        UpdateResponse response = esClient.update(request, RequestOptions.DEFAULT);
+
         System.out.println(JSONObject.toJSONString(response));
         return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
