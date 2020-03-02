@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 功能描述
+ * 增删改查
  *
  * @author chy
  * @date 2020/3/1 0001
@@ -37,6 +37,12 @@ public class IndexController {
     RestHighLevelClient esClient;
 
 
+    /**
+     * 创建索引
+     * @param index
+     * @return
+     * @throws IOException
+     */
     @RequestMapping("createIndex")
     public ResponseEntity createIndex(String index) throws IOException {
         CreateIndexRequest request = new CreateIndexRequest(index);
@@ -46,6 +52,12 @@ public class IndexController {
     }
 
 
+    /**
+     * 删除索引
+     * @param index
+     * @return
+     * @throws IOException
+     */
     @RequestMapping("deleteIndex")
     public ResponseEntity deleteIndex(String index) throws IOException {
         DeleteIndexRequest request = new DeleteIndexRequest(index);
@@ -54,6 +66,14 @@ public class IndexController {
         return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
 
+    /**
+     * 添加数据
+     * @param index
+     * @param type
+     * @param match
+     * @return
+     * @throws IOException
+     */
     @PostMapping("add")
     public ResponseEntity add(String index, String type, Match match) throws IOException {
         IndexRequest request = new IndexRequest(index, type, match.getId().toString());
@@ -63,6 +83,13 @@ public class IndexController {
         return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
 
+    /**
+     * 批量添加数据
+     * @param index
+     * @param type
+     * @return
+     * @throws IOException
+     */
     @PostMapping("addAll")
     public ResponseEntity addAll(String index, String type) throws IOException {
         BulkRequest bulkRequest = new BulkRequest();
@@ -77,6 +104,14 @@ public class IndexController {
     }
 
 
+    /**
+     * 更新数据
+     * @param index
+     * @param type
+     * @param match
+     * @return
+     * @throws IOException
+     */
     @PostMapping("update")
     public ResponseEntity update(String index, String type, Match match) throws IOException {
         UpdateRequest request = new UpdateRequest(index, type, match.getId().toString());

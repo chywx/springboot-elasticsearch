@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 功能描述
+ * 查询相关
  *
  * @author chy
  * @date 2020/3/2 0002
@@ -33,6 +33,14 @@ public class QueryController {
     @Autowired
     RestHighLevelClient esClient;
 
+    /**
+     * 根据id获取信息
+     * @param index
+     * @param type
+     * @param id
+     * @return
+     * @throws IOException
+     */
     @GetMapping("getById")
     public ResponseEntity getById(String index, String type, Integer id) throws IOException {
         GetRequest request = new GetRequest(index, type, id.toString());
@@ -42,6 +50,14 @@ public class QueryController {
 
     }
 
+    /**
+     * 硬编码查询
+     * @param index
+     * @param type
+     * @param name
+     * @return
+     * @throws IOException
+     */
     @GetMapping("search")
     public ResponseEntity search(String index, String type, String name) throws IOException {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
