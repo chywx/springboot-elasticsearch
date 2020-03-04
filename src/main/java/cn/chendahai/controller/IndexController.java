@@ -1,9 +1,14 @@
 package cn.chendahai.controller;
 
 import cn.chendahai.entity.Person;
+import cn.chendahai.entity.Son;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -39,9 +44,6 @@ public class IndexController {
 
     /**
      * 创建索引
-     * @param index
-     * @return
-     * @throws IOException
      */
     @RequestMapping("createIndex")
     public ResponseEntity createIndex(String index) throws IOException {
@@ -54,9 +56,6 @@ public class IndexController {
 
     /**
      * 删除索引
-     * @param index
-     * @return
-     * @throws IOException
      */
     @RequestMapping("deleteIndex")
     public ResponseEntity deleteIndex(String index) throws IOException {
@@ -68,14 +67,15 @@ public class IndexController {
 
     /**
      * 添加数据
-     * @param index
-     * @param type
-     * @param person
-     * @return
-     * @throws IOException
      */
     @PostMapping("add")
     public ResponseEntity add(String index, String type, Person person) throws IOException {
+        Map<String, Son> sonMap = new HashMap<>();
+        sonMap.put("a", new Son("aa", 1));
+        sonMap.put("ab", new Son("cc", 3));
+        sonMap.put("abc", new Son("bb", 2));
+
+        person.setSonMap(sonMap);
         IndexRequest request = new IndexRequest(index, type, person.getId().toString());
         request.source(JSON.toJSONString(person), XContentType.JSON);
         IndexResponse response = esClient.index(request, RequestOptions.DEFAULT);
@@ -85,10 +85,6 @@ public class IndexController {
 
     /**
      * 批量添加数据
-     * @param index
-     * @param type
-     * @return
-     * @throws IOException
      */
     @PostMapping("addAll")
     public ResponseEntity addAll(String index, String type) throws IOException {
@@ -106,11 +102,6 @@ public class IndexController {
 
     /**
      * 更新数据
-     * @param index
-     * @param type
-     * @param person
-     * @return
-     * @throws IOException
      */
     @PostMapping("update")
     public ResponseEntity update(String index, String type, Person person) throws IOException {
@@ -118,10 +109,26 @@ public class IndexController {
 
         request.doc(JSON.toJSONString(person), XContentType.JSON);
 
-        UpdateResponse response = esClient.update(request, RequestOptions.DEFAULT);
+        esClient.updateAsync(request, RequestOptions.DEFAULT, new ActionListener<UpdateResponse>() {
+            @Override
+            public void onResponse(UpdateResponse updateResponse) {
+                System.out.println(updateResponse.getResult());
+            }
 
-        System.out.println(JSONObject.toJSONString(response));
-        return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
+            @Override
+            public void onFailure(Exception e) {
+                System.out.println("error");
+                e.printStackTrace();
+                System.out.println(e.toString());
+            }
+        });
+//        UpdateResponse response = esClient.update(request, RequestOptions.DEFAULT);
+//
+//        System.out.println(response.getResult());
+//
+//        System.out.println(JSONObject.toJSONString(response));
+        return null;
+//        return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
 
 }
