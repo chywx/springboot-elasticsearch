@@ -75,7 +75,7 @@ public class IndexController {
         sonMap.put("ab", new Son("cc", 3));
         sonMap.put("abc", new Son("bb", 2));
 
-        person.setSonMap(sonMap);
+//        person.setSonMap(sonMap);
         IndexRequest request = new IndexRequest(index, type, person.getId().toString());
         request.source(JSON.toJSONString(person), XContentType.JSON);
         IndexResponse response = esClient.index(request, RequestOptions.DEFAULT);
@@ -122,13 +122,7 @@ public class IndexController {
                 System.out.println(e.toString());
             }
         });
-//        UpdateResponse response = esClient.update(request, RequestOptions.DEFAULT);
-//
-//        System.out.println(response.getResult());
-//
-//        System.out.println(JSONObject.toJSONString(response));
         return null;
-//        return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
 
 }

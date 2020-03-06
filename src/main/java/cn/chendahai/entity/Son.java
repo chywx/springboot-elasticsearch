@@ -1,14 +1,11 @@
 package cn.chendahai.entity;
 
-import lombok.Data;
-
 /**
  * 功能描述
  *
  * @author chy
  * @date 2020/3/3 0003
  */
-@Data
 public class Son {
 
     private String name;
@@ -37,5 +34,13 @@ public class Son {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Son{" +
+            "name='" + name + '\'' +
+            ", age=" + age +
+            '}';
     }
 }
