@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/3/1 0001
  */
 @RestController
+@RequestMapping("/index")
 public class IndexController {
 
     @Autowired
@@ -45,8 +47,8 @@ public class IndexController {
     /**
      * 创建索引
      */
-    @RequestMapping("createIndex")
-    public ResponseEntity createIndex(String index) throws IOException {
+    @RequestMapping("/create")
+    public ResponseEntity create(String index) throws IOException {
         CreateIndexRequest request = new CreateIndexRequest(index);
         CreateIndexResponse response = esClient.indices().create(request, RequestOptions.DEFAULT);
         System.out.println(JSONObject.toJSONString(response));
@@ -57,8 +59,8 @@ public class IndexController {
     /**
      * 删除索引
      */
-    @RequestMapping("deleteIndex")
-    public ResponseEntity deleteIndex(String index) throws IOException {
+    @RequestMapping("/delete")
+    public ResponseEntity delete(String index) throws IOException {
         DeleteIndexRequest request = new DeleteIndexRequest(index);
         AcknowledgedResponse response = esClient.indices().delete(request);
         System.out.println(JSONObject.toJSONString(response));
@@ -70,12 +72,15 @@ public class IndexController {
      */
     @PostMapping("add")
     public ResponseEntity add(String index, String type, Person person) throws IOException {
-        Map<String, Son> sonMap = new HashMap<>();
-        sonMap.put("a", new Son("aa", 1));
-        sonMap.put("ab", new Son("cc", 3));
-        sonMap.put("abc", new Son("bb", 2));
 
-//        person.setSonMap(sonMap);
+        ArrayList<Son> sonList = new ArrayList<Son>() {
+            {
+                add(new Son("aa", 1));
+                add(new Son("cc", 3));
+                add(new Son("bb", 2));
+            }
+        };
+        person.setSonList(sonList);
         IndexRequest request = new IndexRequest(index, type, person.getId().toString());
         request.source(JSON.toJSONString(person), XContentType.JSON);
         IndexResponse response = esClient.index(request, RequestOptions.DEFAULT);
@@ -83,46 +88,5 @@ public class IndexController {
         return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
     }
 
-    /**
-     * 批量添加数据
-     */
-    @PostMapping("addAll")
-    public ResponseEntity addAll(String index, String type) throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        for (Person person : Person.people) {
-            IndexRequest indexRequest = new IndexRequest(index, type, person.getId().toString());
-            indexRequest.source(JSON.toJSONString(person), XContentType.JSON);
-            bulkRequest.add(indexRequest);
-        }
-        BulkResponse response = esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        System.out.println(JSONObject.toJSONString(response));
-        return new ResponseEntity(JSONObject.toJSONString(response), HttpStatus.OK);
-    }
-
-
-    /**
-     * 更新数据
-     */
-    @PostMapping("update")
-    public ResponseEntity update(String index, String type, Person person) throws IOException {
-        UpdateRequest request = new UpdateRequest(index, type, person.getId().toString());
-
-        request.doc(JSON.toJSONString(person), XContentType.JSON);
-
-        esClient.updateAsync(request, RequestOptions.DEFAULT, new ActionListener<UpdateResponse>() {
-            @Override
-            public void onResponse(UpdateResponse updateResponse) {
-                System.out.println(updateResponse.getResult());
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                System.out.println("error");
-                e.printStackTrace();
-                System.out.println(e.toString());
-            }
-        });
-        return null;
-    }
 
 }
